@@ -579,7 +579,7 @@
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'llama3-70b-8192',
+          model: 'llama-3.3-70b-versatile',
           messages: [
             { role: 'system', content: "You are Angel, the EOX AI assistant. Answer ONLY from the provided document excerpts. Never use general training knowledge. If the answer is not in the documents, say: \"I don't have information about that in the available documents.\"" },
             ...(history || []),
