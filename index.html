@@ -32,7 +32,6 @@
       height: 100vh;
     }
 
-    /* When loaded standalone (not in iframe), show as centered card */
     @media (min-width: 720px) {
       body {
         align-items: center;
@@ -111,10 +110,82 @@
       margin-right: 5px;
       animation: pulse 2s infinite;
     }
+    .status-dot.offline { background: #f28b82; animation: none; }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50%       { opacity: 0.4; }
     }
+
+    /* Settings icon */
+    .settings-btn {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      color: rgba(255,255,255,0.85);
+      font-size: 16px;
+      transition: background 0.15s;
+    }
+    .settings-btn:hover { background: rgba(255,255,255,0.25); }
+
+    /* Settings modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 24px;
+      width: min(480px, 90vw);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .modal h2 { font-size: 16px; font-weight: 600; color: #202124; margin-bottom: 18px; }
+    .modal label { display: block; font-size: 12px; font-weight: 600; color: #5f6368; margin-bottom: 4px; margin-top: 14px; }
+    .modal label:first-of-type { margin-top: 0; }
+    .modal input {
+      width: 100%; padding: 9px 12px;
+      border: 1.5px solid #dadce0; border-radius: 8px;
+      font-size: 13px; font-family: inherit; color: #202124;
+      outline: none; transition: border-color 0.15s;
+    }
+    .modal input:focus { border-color: #1a73e8; }
+    .modal-footer { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+    .btn-save {
+      padding: 9px 20px; background: #1a73e8; color: #fff;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .btn-save:hover { background: #1557b0; }
+    .btn-cancel {
+      padding: 9px 16px; background: transparent; color: #5f6368;
+      border: 1.5px solid #dadce0; border-radius: 8px; font-size: 13px;
+      cursor: pointer; transition: border-color 0.15s;
+    }
+    .btn-cancel:hover { border-color: #9aa0a6; }
+
+    /* Banner when keys missing */
+    .setup-banner {
+      display: none;
+      background: #fef7e0;
+      border-bottom: 1px solid #f9c440;
+      padding: 10px 20px;
+      font-size: 13px;
+      color: #7a5f00;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .setup-banner.show { display: flex; }
+    .setup-banner a { color: #1a73e8; cursor: pointer; font-weight: 600; text-decoration: none; }
 
     /* Messages area */
     #chat {
@@ -173,7 +244,6 @@
     }
     .bot .bubble.error { background: #fce8e6; color: #c5221f; }
 
-    /* Markdown in bot bubbles */
     .bot .bubble p     { margin: 0 0 8px; }
     .bot .bubble p:last-child { margin-bottom: 0; }
     .bot .bubble strong { font-weight: 600; }
@@ -184,7 +254,6 @@
     .bot .bubble ul, .bot .bubble ol { padding-left: 18px; margin: 4px 0; }
     .bot .bubble li    { margin: 2px 0; }
 
-    /* Source references */
     .sources {
       margin-top: 8px;
       padding-top: 8px;
@@ -193,13 +262,7 @@
       color: #5f6368;
     }
     .sources-label { font-weight: 600; margin-right: 4px; }
-    .sources a {
-      color: #1a73e8;
-      text-decoration: none;
-    }
-    .sources a:hover { text-decoration: underline; }
 
-    /* Typing indicator */
     .typing-indicator {
       display: flex;
       align-items: center;
@@ -220,7 +283,6 @@
       30%            { transform: translateY(-6px); }
     }
 
-    /* Timestamp */
     .ts {
       font-size: 11px;
       color: #9aa0a6;
@@ -230,17 +292,6 @@
     }
     .ts.bot-ts { text-align: left; }
 
-    /* Welcome message */
-    .welcome {
-      text-align: center;
-      padding: 32px 24px;
-      color: #5f6368;
-    }
-    .welcome .icon { font-size: 40px; margin-bottom: 10px; }
-    .welcome h3    { font-size: 16px; font-weight: 600; color: #3c4043; margin-bottom: 6px; }
-    .welcome p     { font-size: 13px; line-height: 1.5; }
-
-    /* Input row */
     .input-area {
       padding: 14px 16px;
       border-top: 1px solid #e8eaed;
@@ -305,7 +356,7 @@
       <div class="header-icon">📚</div>
       <div class="header-text">
         <h1>Angel</h1>
-        <p><span class="status-dot"></span>Connected to EOX knowledge base</p>
+        <p><span class="status-dot" id="statusDot"></span><span id="statusText">Connected to EOX knowledge base</span></p>
       </div>
       <div class="sources-toggle" id="sourcesToggle" title="Show/hide sources">
         <span>Sources</span>
@@ -313,6 +364,11 @@
           <div class="toggle-thumb"></div>
         </div>
       </div>
+      <button class="settings-btn" id="settingsBtn" title="Configure API keys">⚙</button>
+    </div>
+
+    <div class="setup-banner" id="setupBanner">
+      ⚠️ API keys not configured. <a id="setupLink">Click here to set them up</a> before chatting.
     </div>
 
     <div id="chat"></div>
@@ -330,36 +386,115 @@
     </div>
   </div>
 
+  <!-- Settings modal -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <h2>⚙️ API Configuration</h2>
+      <label for="cfgGroq">Groq API Key</label>
+      <input type="password" id="cfgGroq" placeholder="gsk_...">
+      <label for="cfgPinecone">Pinecone API Key</label>
+      <input type="password" id="cfgPinecone" placeholder="pcsk_...">
+      <label for="cfgHost">Pinecone Index Host</label>
+      <input type="text" id="cfgHost" placeholder="https://your-index-xxxx.svc.pinecone.io">
+      <div class="modal-footer">
+        <button class="btn-cancel" id="modalCancel">Cancel</button>
+        <button class="btn-save" id="modalSave">Save</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const input = document.getElementById('input');
-    const btn   = document.getElementById('btn');
-    const chat  = document.getElementById('chat');
+    const STORAGE_KEY = 'eox_angel_cfg';
+    const TOP_K = 5;
+    const EMBED_MODEL = 'llama-text-embed-v2';
+
+    const input   = document.getElementById('input');
+    const btn     = document.getElementById('btn');
+    const chat    = document.getElementById('chat');
     const history = [];
     let showSources = true;
 
+    // --- Config (stored in localStorage) ---
+    function loadCfg() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; }
+    }
+    function saveCfg(cfg) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    }
+    function keysReady() {
+      const c = loadCfg();
+      return c.groqKey && c.pineconeKey && c.pineconeHost;
+    }
+
+    // --- Settings modal ---
+    document.getElementById('settingsBtn').addEventListener('click', openModal);
+    document.getElementById('setupLink').addEventListener('click', openModal);
+    document.getElementById('modalCancel').addEventListener('click', closeModal);
+    document.getElementById('modalBackdrop').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+    document.getElementById('modalSave').addEventListener('click', function() {
+      const cfg = {
+        groqKey:      document.getElementById('cfgGroq').value.trim(),
+        pineconeKey:  document.getElementById('cfgPinecone').value.trim(),
+        pineconeHost: document.getElementById('cfgHost').value.trim().replace(/\/$/, '')
+      };
+      if (!cfg.groqKey || !cfg.pineconeKey || !cfg.pineconeHost) {
+        alert('Please fill in all three fields.');
+        return;
+      }
+      saveCfg(cfg);
+      closeModal();
+      checkKeys();
+    });
+
+    function openModal() {
+      const cfg = loadCfg();
+      document.getElementById('cfgGroq').value      = cfg.groqKey || '';
+      document.getElementById('cfgPinecone').value  = cfg.pineconeKey || '';
+      document.getElementById('cfgHost').value      = cfg.pineconeHost || '';
+      document.getElementById('modalBackdrop').classList.add('open');
+    }
+    function closeModal() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+    }
+
+    function checkKeys() {
+      const ok = keysReady();
+      document.getElementById('setupBanner').classList.toggle('show', !ok);
+      const dot = document.getElementById('statusDot');
+      const txt = document.getElementById('statusText');
+      dot.className = 'status-dot' + (ok ? '' : ' offline');
+      txt.textContent = ok ? 'Connected to EOX knowledge base' : 'Not configured';
+      btn.disabled = !ok;
+    }
+
+    // --- Sources toggle ---
     document.getElementById('sourcesToggle').addEventListener('click', function() {
       showSources = !showSources;
       document.getElementById('toggleTrack').classList.toggle('on', showSources);
     });
 
-    // Auto intro on load
+    // --- Init ---
     window.addEventListener('load', function() {
+      checkKeys();
       addMessage('bot', "Hi! I am Angel, your EOX AI Assistant. How can I help you today?");
-      input.focus();
+      if (keysReady()) input.focus();
+      else openModal();
     });
 
-    // Auto-grow textarea
+    // --- Textarea auto-grow ---
     input.addEventListener('input', function() {
       this.style.height = 'auto';
       this.style.height = Math.min(this.scrollHeight, 120) + 'px';
     });
-
     input.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
     });
     btn.addEventListener('click', send);
 
-    function send() {
+    // --- Send ---
+    async function send() {
       const msg = input.value.trim();
       if (!msg || btn.disabled) return;
 
@@ -370,32 +505,112 @@
       addMessage('user', msg);
       const thinkingBubble = addTyping();
 
-      google.script.run
-        .withSuccessHandler(function(reply) {
-          thinkingBubble.parentElement.remove();
-          let answer = reply;
-          let sources = [];
-          try {
-            const data = JSON.parse(reply);
-            answer = data.answer;
-            sources = data.sources || [];
-          } catch(e) {}
-          addMessage('bot', answer, false, sources);
-          history.push({ role: 'user', content: msg });
-          history.push({ role: 'assistant', content: answer });
-          if (history.length > 20) history.splice(0, 2); // keep last 10 exchanges
-          btn.disabled = false;
-          input.focus();
-        })
-        .withFailureHandler(function(err) {
-          thinkingBubble.parentElement.remove();
-          addMessage('bot', 'Sorry, something went wrong: ' + err.message, true);
-          btn.disabled = false;
-          input.focus();
-        })
-        .getReply(msg, history);
+      try {
+        const { answer, sources } = await getReply(msg, history);
+        thinkingBubble.parentElement.remove();
+        addMessage('bot', answer, false, sources);
+        history.push({ role: 'user', content: msg });
+        history.push({ role: 'assistant', content: answer });
+        if (history.length > 20) history.splice(0, 2);
+      } catch(err) {
+        thinkingBubble.parentElement.remove();
+        addMessage('bot', 'Sorry, something went wrong: ' + err.message, true);
+      } finally {
+        btn.disabled = false;
+        input.focus();
+      }
     }
 
+    // --- Core logic ---
+    async function getReply(message, history) {
+      const cfg = loadCfg();
+
+      if (/^\s*(hi|hello|hey|howdy|good\s*(morning|afternoon|evening)|greetings|sup)[!?.]*\s*$/i.test(message)) {
+        return { answer: "Hi! I'm Angel, your EOX AI Assistant. How can I help you today?", sources: [] };
+      }
+
+      // 1. Embed the query
+      const embedRes = await fetch('https://api.pinecone.io/embed', {
+        method: 'POST',
+        headers: {
+          'Api-Key': cfg.pineconeKey,
+          'Content-Type': 'application/json',
+          'X-Pinecone-API-Version': '2024-10'
+        },
+        body: JSON.stringify({
+          model: EMBED_MODEL,
+          inputs: [{ text: message }],
+          parameters: { input_type: 'query', truncate: 'END' }
+        })
+      });
+      if (!embedRes.ok) {
+        const t = await embedRes.text();
+        throw new Error('Embed failed (' + embedRes.status + '): ' + t);
+      }
+      const embedData = await embedRes.json();
+      const queryVec = embedData.data[0].values;
+
+      // 2. Query Pinecone
+      const qRes = await fetch(cfg.pineconeHost + '/query', {
+        method: 'POST',
+        headers: {
+          'Api-Key': cfg.pineconeKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ vector: queryVec, topK: TOP_K, includeMetadata: true })
+      });
+      if (!qRes.ok) {
+        const t = await qRes.text();
+        throw new Error('Pinecone query failed (' + qRes.status + '): ' + t);
+      }
+      const { matches } = await qRes.json();
+
+      if (!matches || matches.length === 0) {
+        return { answer: "I don't have information about that in the available documents.", sources: [] };
+      }
+
+      const context = matches.map(m => `--- ${m.metadata.source} ---\n${m.metadata.text}`).join('\n\n');
+
+      // 3. Call Groq
+      const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + cfg.groqKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama3-70b-8192',
+          messages: [
+            { role: 'system', content: "You are Angel, the EOX AI assistant. Answer ONLY from the provided document excerpts. Never use general training knowledge. If the answer is not in the documents, say: \"I don't have information about that in the available documents.\"" },
+            ...(history || []),
+            { role: 'user', content: 'Documents:\n\n' + context + '\n\nQuestion: ' + message }
+          ]
+        })
+      });
+      if (!groqRes.ok) {
+        const t = await groqRes.text();
+        throw new Error('Groq failed (' + groqRes.status + '): ' + t);
+      }
+      const groqData = await groqRes.json();
+      const answer = groqData.choices[0].message.content;
+
+      // 4. Build sources (name only, no external links)
+      const noDocAnswer = /cannot\b.{0,15}\bfound|not (found|mentioned|available|provided|contained|stated|specified|present)|can't find|don't have|no information|not in the (documents?|provided|excerpts?)|outside (the|my)|unable to (find|locate|provide)/i.test(answer);
+      const sources = [];
+      if (!noDocAnswer) {
+        const seen = new Set();
+        for (const m of matches) {
+          const src = m.metadata.source;
+          if (src && !seen.has(src)) {
+            seen.add(src);
+            sources.push({ name: src });
+          }
+        }
+      }
+      return { answer, sources };
+    }
+
+    // --- UI helpers ---
     function addMessage(role, text, isError, sources) {
       const row = document.createElement('div');
       row.className = 'msg-row ' + role;
@@ -413,12 +628,11 @@
         bubble.textContent = text;
       }
 
-      // Source references
       if (showSources && sources && sources.length) {
         const refs = document.createElement('div');
         refs.className = 'sources';
         refs.innerHTML = '<span class="sources-label">Sources:</span> ' +
-          sources.map(s => `<a href="${s.url}" target="_blank" rel="noopener">${s.name}</a>`).join(' · ');
+          sources.map(s => escapeHtml(s.name)).join(' · ');
         bubble.appendChild(refs);
       }
 
@@ -426,7 +640,6 @@
       row.appendChild(bubble);
       chat.appendChild(row);
 
-      // Timestamp
       const ts = document.createElement('div');
       ts.className = 'ts' + (role === 'bot' ? ' bot-ts' : '');
       ts.textContent = now();
@@ -439,15 +652,12 @@
     function addTyping() {
       const row = document.createElement('div');
       row.className = 'msg-row bot';
-
       const avatar = document.createElement('div');
       avatar.className = 'avatar';
       avatar.textContent = '🧠';
-
       const bubble = document.createElement('div');
       bubble.className = 'bubble';
       bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-
       row.appendChild(avatar);
       row.appendChild(bubble);
       chat.appendChild(row);
@@ -459,28 +669,23 @@
       return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    // Minimal Markdown → HTML (bold, italic, inline code, code blocks, lists)
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
     function markdownToHtml(text) {
       const escaped = text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
-
       return escaped
-        // fenced code blocks
         .replace(/```[\w]*\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-        // inline code
         .replace(/`([^`]+)`/g, '<code>$1</code>')
-        // bold
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        // italic
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        // unordered lists
         .replace(/^[•\-\*] (.+)$/gm, '<li>$1</li>')
         .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-        // ordered lists
         .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
-        // line breaks → paragraphs
         .replace(/\n\n+/g, '</p><p>')
         .replace(/\n/g, '<br>')
         .replace(/^(.+)$/, '<p>$1</p>');
