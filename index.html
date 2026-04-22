@@ -298,7 +298,20 @@
       font-size: 11px;
       color: #5f6368;
     }
-    .sources-label { font-weight: 600; margin-right: 3px; }
+    .sources-toggle-btn {
+      background: none; border: none; padding: 0;
+      font-size: 11px; font-weight: 600; color: #5f6368;
+      cursor: pointer; display: flex; align-items: center; gap: 4px;
+    }
+    .sources-toggle-btn:hover { color: #1a73e8; }
+    .sources-list {
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 4px;
+    }
+    .sources-list.open { display: flex; }
+    .sources-list span { display: block; padding-left: 2px; }
 
     .typing-indicator {
       display: flex; align-items: center; gap: 4px;
@@ -656,7 +669,22 @@
       if (showSources && sources && sources.length) {
         const refs = document.createElement('div');
         refs.className = 'sources';
-        refs.innerHTML = '<span class="sources-label">Sources:</span> ' + sources.map(s => escapeHtml(s.name)).join(' · ');
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'sources-toggle-btn';
+        toggleBtn.innerHTML = '▶ Sources (' + sources.length + ')';
+        const list = document.createElement('div');
+        list.className = 'sources-list';
+        sources.forEach(s => {
+          const line = document.createElement('span');
+          line.textContent = '· ' + escapeHtml(s.name);
+          list.appendChild(line);
+        });
+        toggleBtn.addEventListener('click', function() {
+          const open = list.classList.toggle('open');
+          toggleBtn.innerHTML = (open ? '▼' : '▶') + ' Sources (' + sources.length + ')';
+        });
+        refs.appendChild(toggleBtn);
+        refs.appendChild(list);
         bubble.appendChild(refs);
       }
 
