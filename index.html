@@ -617,7 +617,7 @@
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           messages: [
-            { role: 'system', content: "You are Angel, the EOX AI assistant. Answer ONLY from the provided document excerpts. Never use general training knowledge. If the answer is not in the documents, say: \"I don't have information about that in the available documents.\"" },
+            { role: 'system', content: "You are Angel, the EOX AI assistant. Answer ONLY from the provided document excerpts or the core facts below. Never use general training knowledge. If the answer is not in the documents or core facts, say: \"I don't have information about that in the available documents.\"\n\nCore Facts:\n- The organization is the Employee Ownership Expansion Network, known as EOX.\n- The official EOX Network website is https://www.eoxnetwork.org.\n- EOX Network's website address is eoxnetwork.org." },
             ...(history || []),
             { role: 'user', content: 'Documents:\n\n' + context + '\n\nQuestion: ' + message }
           ]
