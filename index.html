@@ -602,6 +602,16 @@
       if (/^\s*(hi|hello|hey|howdy|good\s*(morning|afternoon|evening)|greetings|sup)[!?.]*\s*$/i.test(message)) {
         return { answer: "Hi! I'm Angel, your EOX AI Assistant. How can I help you today?", sources: [] };
       }
+      if (/who are you|what are you|what is your name|what('s| is) your (name|purpose|role)|tell me about yourself|introduce yourself/i.test(message)) {
+        return { answer: "I'm Angel, the EOX AI Assistant. I can answer questions about EOX documents, policies, and resources. How can I help you today?", sources: [] };
+      }
+      if (/what can you (do|help|assist)|how (do|can) (you|i use you)|how does this work/i.test(message)) {
+        return { answer: "I can answer questions about EOX documents, policies, procedures, and resources. Just ask me anything related to the EOX knowledge base!", sources: [] };
+      }
+      if (/^i('m| am)\s+\w+[!.,]?\s*$/i.test(message)) {
+        const name = message.replace(/^i('m| am)\s+/i, '').replace(/[!.,]+$/, '').trim();
+        return { answer: "Nice to meet you, " + name + "! How can I help you today?", sources: [] };
+      }
 
       const embedRes = await fetch('https://api.pinecone.io/embed', {
         method: 'POST',
